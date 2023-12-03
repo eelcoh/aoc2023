@@ -93,20 +93,13 @@ parse2Helper = \parser, inputString ->
         |> Result.try List.first
 
 
-# makeNat : Str -> Result Nat [NoNat]
-# makeNat = \str ->
-#     nats = 
-#         Str.graphemes str        
-#         |> List.keepOks Str.toNat
-  
-#     makeNatFromList nats
-
 makeNatFromList : List Nat -> Result Nat [NoNat]
 makeNatFromList = \nats -> 
     when nats is 
         [f, .. , l] -> Ok (10*f + l)
         [f] -> Ok (10*f + f)
         [] -> Err NoNat
+
 
 # Parsers for Part 2
 
@@ -168,8 +161,6 @@ digitParserReverse =
         string "orez" |> map \_ -> Zero,
         anyCodeunit |> map \_ -> NoDigit,
     ]
-
-
 
 # helpers
 
