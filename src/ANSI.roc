@@ -5,7 +5,7 @@ interface ANSI
         # ANSI
         Code,
         toStr,
-        
+
         # Color
         Color,
         withFg,

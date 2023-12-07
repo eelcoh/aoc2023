@@ -15,8 +15,8 @@ display = \s -> "\(Num.toStr s.year) Day \(Num.toStr s.day): \(s.title)"
 
 getDescription : List Solution, U64, U64 -> Result Str [NotAvailable]
 getDescription = \solutions, year, day ->
-    solutions 
-    |> List.keepOks (filterByYearDay year day) 
+    solutions
+    |> List.keepOks (filterByYearDay year day)
     |> List.first
     |> Result.mapErr \_ -> NotAvailable
     |> Result.map display
