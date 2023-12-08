@@ -4,34 +4,37 @@ interface S2023.D02
     
         [ AoC
         , Cubes.{ Cubes } 
-        # , "2023-02.txt" as input : Str
-        # , parser.Core.{ Parser, many, oneOf, map }
-        # , parser.String.{ parseStr, string, codeunit, anyCodeunit }
-        # , pf.Stdout
+        , "2023-02.txt" as input : Str
         ,
         ] 
 
 solution : AoC.Solution
 solution = { year: 2023, day: 2, title: "Cubes Conundrum", part1, part2 }
 
+games : List Game
+games = 
+    lines input 
+    |> List.map parseLine
+    
 part1 : {} -> Result Str [NotImplemented, Error Str]
 part1 = \_ -> 
-    dbg "hello"
 
-    lines testset 
-        |> List.map parseLine
-        # |> List.keepIf gameIsValid
-        # |> List.map .id
-        # |> List.map Num.toStr
-        |> List.map .cubes
-        |> List.map cubesListToStr
-        |> Str.joinWith "\n"
-        |> Ok
+    games 
+    |> List.keepIf gameIsValid
+    |> List.map .id
+    |> List.sum
+    |> Num.toStr
+    |> Ok
 
 part2 : {} -> Result Str [NotImplemented, Error Str]
-part2 = \_ -> Err NotImplemented
-
-
+part2 = \_ -> 
+    games
+    |> List.map .cubes # -> List (List Cubes)
+    |> List.map (\cl -> List.walk cl Cubes.empty Cubes.max) # -> List Cubes
+    |> List.map Cubes.power # -> List U64
+    |> List.sum # -> U64
+    |> Num.toStr # -> Str
+    |> Ok
 
 
 Game : 
@@ -40,8 +43,6 @@ Game :
     }
 
 
-    
-
 emptyGame : Game 
 emptyGame = 
     { id : 0
@@ -49,12 +50,10 @@ emptyGame =
     }
 
     
-
 gameIsValid = \game -> 
     List.map game.cubes Cubes.isValid
         |> all
 
-        
 
 parseLine : Str -> Game
 parseLine = \inputLine ->
@@ -71,11 +70,11 @@ parseGameStr = \gameStr ->
     parts = Str.split gameStr " " 
 
     when parts is 
-        ["game", n] -> 
+        ["Game", n] -> 
             Str.trim n
             |> Str.toU64 
             |> Result.withDefault 0
-        ["game", n, ..] -> 
+        ["Game", n, ..] -> 
             Str.trim n
             |> Str.toU64 
             |> Result.withDefault 0
@@ -100,16 +99,17 @@ parseCubesStr2 = \cubesStr ->
 
     getColorValue = \colorStr ->
         when Str.split colorStr " " is
-            ["red", val] -> 
+            [val, "red"] -> 
                 parseVal val Cubes.red
 
-            ["green", val] ->
+            [val, "green"] ->
                 parseVal val Cubes.green 
                 
-            ["blue", val] -> 
+            [val, "blue"] -> 
                 parseVal val Cubes.blue
 
-            [..] -> Ok Cubes.empty
+            [..] -> 
+                Ok Cubes.empty
 
     Str.split cubesStr ","
         |> List.map Str.trim

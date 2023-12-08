@@ -1,5 +1,5 @@
 interface Cubes
-    exposes [Cubes, empty, red, green, blue, add, max, toStr, toList, isValid]
+    exposes [Cubes, empty, red, green, blue, add, max, toStr, toList, isValid, power]
     imports 
         [  
         ]
@@ -47,6 +47,10 @@ empty =
     , green : 0
     , blue : 0
     }
+
+power : Cubes -> U64
+power = \c -> 
+    c.red * c.green * c.blue
 
 max : Cubes, Cubes -> Cubes
 max = \c1, c2 -> 
