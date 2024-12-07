@@ -1,9 +1,5 @@
-interface Modules.Strings
-    exposes [lines]
-    imports 
-        [  
-        ]
+module [lines]
 
 lines : Str -> List Str
-lines = \str -> 
-    Str.split str "\n"
+lines = \str ->
+    Str.splitOn str "\n"

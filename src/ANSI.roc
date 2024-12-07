@@ -1,35 +1,33 @@
 # TODO move this back into [lukewilliamboswell/roc-ansi](https://github.com/lukewilliamboswell/roc-ansi)
 # for now this is quicker to iterate on designs
-interface ANSI
-    exposes [
-        # ANSI
-        Code,
-        toStr,
+module [
+    # ANSI
+    Code,
+    toStr,
 
-        # Color
-        Color,
-        withFg,
-        withBg,
-        withColor,
+    # Color
+    Color,
+    withFg,
+    withBg,
+    withColor,
 
-        # TUI
-        DrawFn,
-        Pixel,
-        ScreenSize,
-        Position,
-        Input,
-        parseCursor,
-        updateCursor,
-        inputToStr,
-        parseRawStdin,
-        drawScreen,
-        drawText,
-        drawVLine,
-        drawHLine,
-        drawBox,
-        drawCursor,
-    ]
-    imports []
+    # TUI
+    DrawFn,
+    Pixel,
+    ScreenSize,
+    Position,
+    Input,
+    parseCursor,
+    updateCursor,
+    inputToStr,
+    parseRawStdin,
+    drawScreen,
+    drawText,
+    drawVLine,
+    drawHLine,
+    drawBox,
+    drawCursor,
+]
 
 ## [ANSI Escape Codes](https://en.wikipedia.org/wiki/ANSI_escape_code)
 Code : [
@@ -76,78 +74,78 @@ esc = "\u(001b)"
 toStr : Code -> Str
 toStr = \code ->
     when code is
-        Reset -> "\(esc)c"
-        ClearScreen -> "\(esc)[3J"
-        GetCursor -> "\(esc)[6n"
-        SetCursor { row, col } -> "\(esc)[\(Num.toStr row);\(Num.toStr col)H"
+        Reset -> "$(esc)c"
+        ClearScreen -> "$(esc)[3J"
+        GetCursor -> "$(esc)[6n"
+        SetCursor { row, col } -> "$(esc)[$(Num.toStr row);$(Num.toStr col)H"
         SetFgColor color -> fromFgColor color
         SetBgColor color -> fromBgColor color
-        EraseToEnd -> "\(esc)[0K"
-        EraseFromStart -> "\(esc)[1K"
-        EraseLine -> "\(esc)[2K"
-        MoveCursorHome -> "\(esc)[H"
-        MoveCursorNextLine -> "\(esc)[1E"
-        MoveCursorPrevLine -> "\(esc)[1F"
+        EraseToEnd -> "$(esc)[0K"
+        EraseFromStart -> "$(esc)[1K"
+        EraseLine -> "$(esc)[2K"
+        MoveCursorHome -> "$(esc)[H"
+        MoveCursorNextLine -> "$(esc)[1E"
+        MoveCursorPrevLine -> "$(esc)[1F"
         MoveCursor direction steps ->
             when direction is
-                Up -> "\(esc)[\(Num.toStr steps)A"
-                Down -> "\(esc)[\(Num.toStr steps)B"
-                Right -> "\(esc)[\(Num.toStr steps)C"
-                Left -> "\(esc)[\(Num.toStr steps)D"
+                Up -> "$(esc)[$(Num.toStr steps)A"
+                Down -> "$(esc)[$(Num.toStr steps)B"
+                Right -> "$(esc)[$(Num.toStr steps)C"
+                Left -> "$(esc)[$(Num.toStr steps)D"
 
 fromFgColor : Color -> Str
 fromFgColor = \color ->
     when color is
-        Black -> "\(esc)[30m"
-        Red -> "\(esc)[31m"
-        Green -> "\(esc)[32m"
-        Yellow -> "\(esc)[33m"
-        Blue -> "\(esc)[34m"
-        Magenta -> "\(esc)[35m"
-        Cyan -> "\(esc)[36m"
-        Gray -> "\(esc)[37m"
-        Default -> "\(esc)[39m"
-        BrightBlack -> "\(esc)[90m"
-        BrightRed -> "\(esc)[91m"
-        BrightGreen -> "\(esc)[92m"
-        BrightYellow -> "\(esc)[93m"
-        BrightBlue -> "\(esc)[94m"
-        BrightMagenta -> "\(esc)[95m"
-        BrightCyan -> "\(esc)[96m"
-        BrightWhite -> "\(esc)[97m"
+        Black -> "$(esc)[30m"
+        Red -> "$(esc)[31m"
+        Green -> "$(esc)[32m"
+        Yellow -> "$(esc)[33m"
+        Blue -> "$(esc)[34m"
+        Magenta -> "$(esc)[35m"
+        Cyan -> "$(esc)[36m"
+        Gray -> "$(esc)[37m"
+        Default -> "$(esc)[39m"
+        BrightBlack -> "$(esc)[90m"
+        BrightRed -> "$(esc)[91m"
+        BrightGreen -> "$(esc)[92m"
+        BrightYellow -> "$(esc)[93m"
+        BrightBlue -> "$(esc)[94m"
+        BrightMagenta -> "$(esc)[95m"
+        BrightCyan -> "$(esc)[96m"
+        BrightWhite -> "$(esc)[97m"
 
 fromBgColor : Color -> Str
 fromBgColor = \color ->
     when color is
-        Black -> "\(esc)[40m"
-        Red -> "\(esc)[41m"
-        Green -> "\(esc)[42m"
-        Yellow -> "\(esc)[43m"
-        Blue -> "\(esc)[44m"
-        Magenta -> "\(esc)[45m"
-        Cyan -> "\(esc)[46m"
-        Gray -> "\(esc)[47m"
-        Default -> "\(esc)[49m"
-        BrightBlack -> "\(esc)[100m"
-        BrightRed -> "\(esc)[101m"
-        BrightGreen -> "\(esc)[102m"
-        BrightYellow -> "\(esc)[103m"
-        BrightBlue -> "\(esc)[104m"
-        BrightMagenta -> "\(esc)[105m"
-        BrightCyan -> "\(esc)[106m"
-        BrightWhite -> "\(esc)[107m"
+        Black -> "$(esc)[40m"
+        Red -> "$(esc)[41m"
+        Green -> "$(esc)[42m"
+        Yellow -> "$(esc)[43m"
+        Blue -> "$(esc)[44m"
+        Magenta -> "$(esc)[45m"
+        Cyan -> "$(esc)[46m"
+        Gray -> "$(esc)[47m"
+        Default -> "$(esc)[49m"
+        BrightBlack -> "$(esc)[100m"
+        BrightRed -> "$(esc)[101m"
+        BrightGreen -> "$(esc)[102m"
+        BrightYellow -> "$(esc)[103m"
+        BrightBlue -> "$(esc)[104m"
+        BrightMagenta -> "$(esc)[105m"
+        BrightCyan -> "$(esc)[106m"
+        BrightWhite -> "$(esc)[107m"
 
 ## Adds foreground color formatting to a Str and then resets to Default
 withFg : Str, Color -> Str
-withFg = \str, color -> "\(toStr (SetFgColor color))\(str)\(esc)[0m"
+withFg = \str, color -> "$(toStr (SetFgColor color))$(str)$(esc)[0m"
 
 ## Adds background color formatting to a Str and then resets to Default
 withBg : Str, Color -> Str
-withBg = \str, color -> "\(toStr (SetBgColor color))\(str)\(esc)[0m"
+withBg = \str, color -> "$(toStr (SetBgColor color))$(str)$(esc)[0m"
 
 ## Adds color formatting to a Str and then resets to Default
 withColor : Str, { fg : Color, bg : Color } -> Str
-withColor = \str, colors -> "\(toStr (SetFgColor colors.fg))\(toStr (SetBgColor colors.bg))\(str)\(esc)[0m"
+withColor = \str, colors -> "$(toStr (SetFgColor colors.fg))$(toStr (SetBgColor colors.bg))$(str)$(esc)[0m"
 
 Key : [
     Up,
@@ -372,11 +370,11 @@ expect parseRawStdin [27] == KeyPress Escape
 inputToStr : Input -> Str
 inputToStr = \input ->
     when input is
-        KeyPress key -> "Key \(keyToStr key)"
+        KeyPress key -> "Key $(keyToStr key)"
         CtrlC -> "Ctrl-C"
         Unsupported bytes ->
             bytesStr = bytes |> List.map Num.toStr |> Str.joinWith ","
-            "Unsupported [\(bytesStr)]"
+            "Unsupported [$(bytesStr)]"
 
 keyToStr : Key -> Str
 keyToStr = \key ->
@@ -584,7 +582,7 @@ joinAllPixels = \rows ->
     |> .lines
     |> Str.joinWith ""
 
-joinPixelRow : { char : Str, fg : Color, bg : Color, lines : List Str }, List Pixel, Nat -> { char : Str, fg : Color, bg : Color, lines : List Str }
+joinPixelRow : { char : Str, fg : Color, bg : Color, lines : List Str }, List Pixel, U64 -> { char : Str, fg : Color, bg : Color, lines : List Str }
 joinPixelRow = \{ char, fg, bg, lines }, pixelRow, row ->
 
     { rowStrs, prev } =
@@ -658,7 +656,7 @@ drawText = \text, { r, c, fg ? Default, bg ? Default } -> \_, pixel ->
         len = text |> Str.toUtf8 |> List.len |> Num.toI32
         if pixel.row == r && pixel.col >= c && pixel.col < (c + len) then
             bytes
-            |> List.get (Num.toNat (pixel.col - c))
+            |> List.get (Num.toU64 (pixel.col - c))
             |> Result.try \b -> Str.fromUtf8 [b]
             |> Result.map \char -> { char, fg, bg }
             |> Result.mapErr \_ -> {}

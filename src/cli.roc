@@ -1,55 +1,56 @@
-app "AoC"
-    packages {
-        pf: "https://github.com/roc-lang/basic-cli/releases/download/0.7.0/bkGby8jb0tmZYsy2hg1E_B2QrCgcSTxdUlHtETwm5m4.tar.br",
-        parser: "https://github.com/lukewilliamboswell/roc-parser/releases/download/0.2.0/dJQSsSmorujhiPNIvJKlQoI92RFIG_JQwUfIxZsCSwE.tar.br",
-    }
-    imports [
-        pf.Stdout,
-        pf.Arg,
-        pf.Task.{ Task },
-        pf.Utc.{ Utc },
-        ANSI,
-        App,
-        AoC,
-        # parser.Core.{ Parser, many, oneOf, map },
-        # parser.String.{ parseStr, codeunit, anyCodeunit },
-    ]
-    provides [main] to pf
+app [main] {
+    pf: platform "https://github.com/roc-lang/basic-cli/releases/download/0.17.0/lZFLstMUCUvd5bjnnpYromZJXkQUrdhbva4xdBInicE.tar.br",
+    parser: "https://github.com/lukewilliamboswell/roc-parser/releases/download/0.9.0/w8YKp2YAgQt5REYk912HfKAHBjcXsrnvtjI0CBzoAT4.tar.br",
+}
 
-main : Task {} *
-main = 
+import pf.Stdout
+import pf.Arg
+import pf.Utc exposing [Utc]
+import ANSI
+import App
+import AoC
+
+# main : Task {} [StdoutErr [BrokenPipe, Interrupted, Other Str, OutOfMemory, Unsupported, WouldBlock, WriteZero]]
+main : Task {} _
+main =
     runTask |> Task.onErr handlErr
 
-handlErr : [UnableToParseArgs] -> Task {} *
+# handlErr : [UnableToParseArgs] -> Task {} _
+# handlErr : [UnableToParseArgs] -> Task {} [StdoutErr [BrokenPipe, Interrupted, Other Str, OutOfMemory, Unsupported, WouldBlock, WriteZero]]
 handlErr = \err ->
     when err is
-        UnableToParseArgs -> Stdout.line "Unable to parse args, usage 'roc run src/cli.roc -- <year> <day>'"
+        UnableToParseArgs -> Stdout.line! "Unable to parse args, usage 'roc run src/cli.roc -- <year> <day>'"
+        _ -> Stdout.line! "Unable to parse args, usage 'roc run src/cli.roc -- <year> <day>'"
 
-runTask : Task {} [UnableToParseArgs]
+runTask : Task {} _
 runTask =
 
-    { yearArg, dayArg } <- getArgs |> Task.await
+    # { yearArg, dayArg } <- getArgs |> Task.await
+    { yearArg, dayArg } = getArgs!
 
-    start <- Utc.now |> Task.await
+    # start <- Utc.now |> Task.await
+    start = Utc.now! {}
 
     {} <- Stdout.write (ANSI.withFg "Running Part 1..." Gray) |> Task.await
 
     partOneResult = App.solvePuzzle { year: yearArg, day: dayArg, puzzle: Part1 }
 
-    mid <- Utc.now |> Task.await
+    # mid <- Utc.now |> Task.await
+    mid = Utc.now! {}
 
     {} <- Stdout.write (ANSI.withFg "done\nRunning Part 2..." Gray) |> Task.await
 
     partTwoResult = App.solvePuzzle { year: yearArg, day: dayArg, puzzle: Part2 }
 
-    end <- Utc.now |> Task.await
+    # end <- Utc.now |> Task.await
+    end = Utc.now! {}
 
     {} <- Stdout.write (ANSI.withFg "done\n" Gray) |> Task.await
 
     description = AoC.getDescription App.solutions yearArg dayArg |> Result.withDefault "unreachable"
-    header = ANSI.withFg "Solution for \(description)" Blue
-    year = ANSI.withFg "\(Num.toStr yearArg)" Blue
-    day = ANSI.withFg "\(Num.toStr dayArg)" Blue
+    header = ANSI.withFg "Solution for $(description)" Blue
+    year = ANSI.withFg "$(Num.toStr yearArg)" Blue
+    day = ANSI.withFg "$(Num.toStr dayArg)" Blue
     part1 = solutionResultToStr partOneResult
     part2 = solutionResultToStr partTwoResult
     part1Time = ANSI.withFg (deltaToStr start mid) Blue
@@ -58,26 +59,27 @@ runTask =
 
     """
     ---------------------------------
-    \(header)
+    $(header)
     ---------------------------------
-    year: \(year)
-    day: \(day)
-    total time: \(totalTime)
+    year: $(year)
+    day: $(day)
+    total time: $(totalTime)
 
-    Part 1 calculated in \(part1Time) ms
+    Part 1 calculated in $(part1Time) ms
     ---------------------------------
-    \(part1)
+    $(part1)
 
-    Part 2 calculated in \(part2Time) ms
+    Part 2 calculated in $(part2Time) ms
     ---------------------------------
-    \(part2)
+    $(part2)
 
     """
     |> Stdout.line
 
-getArgs : Task { yearArg : U64, dayArg : U64 } [UnableToParseArgs]
+getArgs : Task { yearArg : U64, dayArg : U64 } _
 getArgs =
-    args <- Arg.list |> Task.await
+    # args <- Arg.list |> Task.await
+    args = Arg.list! {}
 
     when args is
         [_, first, second, ..] ->
@@ -92,7 +94,7 @@ solutionResultToStr = \result ->
     when result is
         Ok answer -> answer
         Err NotImplemented -> "not yet implemented"
-        Err (Error msg) -> "returned an error: \(msg)"
+        Err (Error msg) -> "returned an error: $(msg)"
 
 deltaToStr : Utc, Utc -> Str
 deltaToStr = \start, end ->

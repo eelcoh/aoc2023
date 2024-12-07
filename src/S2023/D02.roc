@@ -1,25 +1,21 @@
-interface S2023.D02
-    exposes [solution]
-    imports
-    
-        [ AoC
-        , Cubes.{ Cubes } 
-        , "2023-02.txt" as input : Str
-        ,
-        ] 
+module [solution]
+
+import AoC
+import Cubes exposing [Cubes]
+import "2023-02.txt" as input : Str
 
 solution : AoC.Solution
 solution = { year: 2023, day: 2, title: "Cubes Conundrum", part1, part2 }
 
 games : List Game
-games = 
-    lines input 
+games =
+    lines input
     |> List.map parseLine
-    
-part1 : {} -> Result Str [NotImplemented, Error Str]
-part1 = \_ -> 
 
-    games 
+part1 : {} -> Result Str [NotImplemented, Error Str]
+part1 = \_ ->
+
+    games
     |> List.keepIf gameIsValid
     |> List.map .id
     |> List.sum
@@ -27,7 +23,7 @@ part1 = \_ ->
     |> Ok
 
 part2 : {} -> Result Str [NotImplemented, Error Str]
-part2 = \_ -> 
+part2 = \_ ->
     games
     |> List.map .cubes # -> List (List Cubes)
     |> List.map (\cl -> List.walk cl Cubes.empty Cubes.max) # -> List Cubes
@@ -36,115 +32,107 @@ part2 = \_ ->
     |> Num.toStr # -> Str
     |> Ok
 
+Game :
+{
+    id : U64,
+    cubes : List Cubes,
+}
 
-Game : 
-    { id : U64
-    , cubes : List Cubes
-    }
+emptyGame : Game
+emptyGame = {
+    id: 0,
+    cubes: [],
+}
 
-
-emptyGame : Game 
-emptyGame = 
-    { id : 0
-    , cubes : []
-    }
-
-    
-gameIsValid = \game -> 
+gameIsValid = \game ->
     List.map game.cubes Cubes.isValid
-        |> all
-
+    |> all
 
 parseLine : Str -> Game
 parseLine = \inputLine ->
-    parts = Str.split inputLine ": " 
-    
-    when parts is 
-        [gameStr, cubesStr, ..] -> 
-            {id: (parseGameStr gameStr), cubes : (parseCubesStr cubesStr)}
-        _ -> emptyGame
+    parts = Str.splitOn inputLine ": "
 
+    when parts is
+        [gameStr, cubesStr, ..] ->
+            { id: parseGameStr gameStr, cubes: parseCubesStr cubesStr }
+
+        _ -> emptyGame
 
 parseGameStr : Str -> U64
 parseGameStr = \gameStr ->
-    parts = Str.split gameStr " " 
+    parts = Str.splitOn gameStr " "
 
-    when parts is 
-        ["Game", n] -> 
+    when parts is
+        ["Game", n] ->
             Str.trim n
-            |> Str.toU64 
+            |> Str.toU64
             |> Result.withDefault 0
-        ["Game", n, ..] -> 
+
+        ["Game", n, ..] ->
             Str.trim n
-            |> Str.toU64 
+            |> Str.toU64
             |> Result.withDefault 0
+
         _ -> 0
-
 
 parseCubesStr : Str -> List Cubes
 parseCubesStr = \cubesStr ->
-    Str.split cubesStr ";"
-        |> List.map parseCubesStr2
-
+    Str.splitOn cubesStr ";"
+    |> List.map parseCubesStr2
 
 parseCubesStr2 : Str -> Cubes
 parseCubesStr2 = \cubesStr ->
 
     # parseVal = Str, (U64 -> Cubes) -> Cubes
-    parseVal = \val, fnCubes -> 
+    parseVal = \val, fnCubes ->
 
         Str.trim val
-        |> Str.toU64 
+        |> Str.toU64
         |> Result.map fnCubes
 
     getColorValue = \colorStr ->
-        when Str.split colorStr " " is
-            [val, "red"] -> 
+        when Str.splitOn colorStr " " is
+            [val, "red"] ->
                 parseVal val Cubes.red
 
             [val, "green"] ->
-                parseVal val Cubes.green 
-                
-            [val, "blue"] -> 
+                parseVal val Cubes.green
+
+            [val, "blue"] ->
                 parseVal val Cubes.blue
 
-            [..] -> 
+            [..] ->
                 Ok Cubes.empty
 
-    Str.split cubesStr ","
-        |> List.map Str.trim
-        |> List.keepOks getColorValue
-        |> List.walk Cubes.empty Cubes.add
+    Str.splitOn cubesStr ","
+    |> List.map Str.trim
+    |> List.keepOks getColorValue
+    |> List.walk Cubes.empty Cubes.add
 
-
-testGames = 
+testGames =
     lines testset
-        |> List.map parseLine
-        |> List.keepIf gameIsValid
-        |> List.map .id
-    
-    
+    |> List.map parseLine
+    |> List.keepIf gameIsValid
+    |> List.map .id
+
 # helpers
 all : List Bool -> Bool
-all = \bools -> 
+all = \bools ->
     bools
     |> List.walk Bool.true Bool.and
 
-
-lines = \str -> 
-    Str.split str "\n"
-
+lines = \str ->
+    Str.splitOn str "\n"
 
 cubesListToStr : List Cubes -> Str
-cubesListToStr = \cubesList -> 
+cubesListToStr = \cubesList ->
     List.map cubesList Cubes.toStr
     |> Str.joinWith " - "
-
 
 # tests
 expect testGames == [1, 2, 5]
 
-testset = 
+testset =
     """
     Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
     Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue

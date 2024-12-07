@@ -1,6 +1,6 @@
-interface S2022.D02
-    exposes [solution]
-    imports [AoC]
+module [solution]
+
+import AoC
 
 solution : AoC.Solution
 solution = { year: 2022, day: 2, title: "Rock Paper Scissors", part1, part2 }

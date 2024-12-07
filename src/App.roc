@@ -1,17 +1,17 @@
-interface App
-    exposes [
-        solutions,
-        solvePuzzle,
-    ]
-    imports [
-        AoC,
-        S2022.D01,
-        S2022.D02,
-        S2022.D03,
-        S2023.D01,
-        S2023.D02,
-        S2023.D03,
-    ]
+module [
+    solutions,
+    solvePuzzle,
+]
+
+import AoC
+import S2022.D01
+import S2022.D02
+import S2022.D03
+import S2023.D01
+import S2023.D02
+import S2023.D03
+import S2024.D01
+import S2024.D02
 
 ## Export a list of the solutions included in this app
 solutions : List AoC.Solution
@@ -23,6 +23,8 @@ solutions =
         S2023.D01.solution,
         S2023.D02.solution,
         S2023.D03.solution,
+        S2024.D01.solution,
+        S2024.D02.solution,
     ]
     |> List.sortWith sortByYearAndDay
 

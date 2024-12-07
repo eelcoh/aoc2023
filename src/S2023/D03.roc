@@ -1,94 +1,93 @@
-interface S2023.D03
-    exposes [solution]
-    imports 
-        [ AoC
-        , Modules.Strings.{ lines }
-        ,
-        ]
+module [solution]
+
+import AoC
+import Modules.Strings exposing [lines]
 
 solution : AoC.Solution
 solution = { year: 2023, day: 3, title: "Rucksack Reorganization", part1, part2 }
 
 part1 : {} -> Result Str [NotImplemented, Error Str]
-part1 = \_ -> 
-    grid 
-    |> gridToString
-    |> Str.joinWith "\n"
+part1 = \_ ->
+    grid
+    |> vecsToString # Str
+    #|> gridToString # List Str
+    #|> Str.joinWith "\n" # Str
     |> Ok
-
 
 part2 : {} -> Result Str [NotImplemented, Error Str]
 part2 = \_ -> Err NotImplemented
 
-grid = 
-    lines testSet
-    |> List.map Str.graphemes
-    |> List.map vectorise
-
+grid : List Vector
+grid =
+    lines testSet # List Str
+    #|> List.map Str.toUtf8 # List (List U8)
+    #|> List.map vectorise
+    |> vectorise
 
 TokenType :
-    [ Number
-    , Symbol
-    , Space
-    , Start
-    ]
+[
+    Number,
+    Symbol,
+    Space,
+    Start,
+]
 
-
-Vector : 
-    [Vector TokenType Nat Nat Str ]
-
+Vector :
+[Vector TokenType U64 U64 Str]
 
 vectorise : List Str -> List Vector
-vectorise = \strs -> 
+vectorise = \strs ->
     vectoriser Start 0 0 [] "" strs
 
-
-vectoriser : TokenType, Nat, Nat, List Vector, Str, List Str -> List Vector
+vectoriser : TokenType, U64, U64, List Vector, Str, List Str -> List Vector
 vectoriser = \currentTokenType, start, last, vecs, acum, rest ->
 
     dbg "+++++"
+
     dbg acum
 
     when rest is
-
-        [] -> 
+        [] ->
             List.append vecs (Vector currentTokenType start last acum)
 
-        [head, .. as tail] -> 
+        [head, .. as tail] ->
             dbg acum
+
             headTokenType = tokenType head
-        
-            if tokenTypeIsEqual headTokenType currentTokenType
-                then 
-                    dbg "=="
-                    # dbg head
-                    dbg acum
-                    # dbg rest
 
-                    vectoriser 
-                        headTokenType
-                        start 
-                        (last + 1) 
-                        vecs 
-                        (Str.concat acum head) 
-                        tail
-                else
-                    dbg "!="
-                    # dbg head
-                    dbg acum
-                    # dbg rest
+            if
+                tokenTypeIsEqual headTokenType currentTokenType
+            then
+                dbg "=="
 
-                    vectoriser 
-                        headTokenType
-                        (last + 1)  
-                        (last + 1) 
-                        (List.append vecs (Vector headTokenType start last acum)) 
-                        head 
-                        tail                    
+                # dbg head
+                dbg acum
 
+                # dbg rest
+                vectoriser
+                    headTokenType
+                    start
+                    (last + 1)
+                    vecs
+                    (Str.concat acum head)
+                    tail
+            else
+                dbg "!="
+
+                # dbg head
+                dbg acum
+
+                # dbg rest
+                vectoriser
+                    headTokenType
+                    (last + 1)
+                    (last + 1)
+                    (List.append vecs (Vector headTokenType start last acum))
+                    head
+                    tail
 
 tokenType : Str -> TokenType
-tokenType = \str -> 
+tokenType = \str ->
     when str is
         "1" -> Number
         "2" -> Number
@@ -110,7 +109,6 @@ tokenType = \str ->
         "*" -> Symbol
         _ -> Start
 
-
 tokenTypeIsEqual : TokenType, TokenType -> Bool
 tokenTypeIsEqual = \t1, t2 ->
     when (t1, t2) is
@@ -120,19 +118,19 @@ tokenTypeIsEqual = \t1, t2 ->
         _ -> Bool.false
 
 gridToString : List (List Vector) -> List Str
-gridToString = \vecs -> 
+gridToString = \vecs ->
     List.map vecs vecsToString
 
 vecsToString : List Vector -> Str
-vecsToString = \vecs -> 
+vecsToString = \vecs ->
     List.map vecs vecToString
     |> Str.joinWith " | "
 
 vecToString : Vector -> Str
-vecToString = \(Vector _ _ _ s) -> 
+vecToString = \Vector _ _ _ s ->
     s
 
-testSet = 
+testSet =
     """
     467..114..
     ...*......
@@ -145,4 +143,3 @@ testSet =
     ...$.*....
     .664.598..
     """
-    

@@ -1,49 +1,42 @@
-interface S2023.D01
-    exposes [solution]
-    imports 
-        [ "2023-01.txt" as input : Str
-        , AoC
-        , parser.Core.{ Parser, many, oneOf, map }
-        , parser.String.{ parseStr, string, codeunit, anyCodeunit }
-        ,
-        ]
+module [solution]
+
+import "2023-01.txt" as input : Str
+import AoC
+import parser.Parser exposing [Parser, many, oneOf, map]
+import parser.String exposing [parseStr, string, codeunit, anyCodeunit]
 
 solution : AoC.Solution
 solution = { year: 2023, day: 1, title: "Trebuchet?!", part1, part2 }
 
 Digit : [One, Two, Three, Four, Five, Six, Seven, Eight, Nine, Zero, NoDigit]
 
-
 part1 : {} -> Result Str [NotImplemented, Error Str]
-part1 = \_ -> 
+part1 = \_ ->
     parse1 input
-        |> List.sum
-        |> Num.toStr
-        |> Ok
+    |> List.sum
+    |> Num.toStr
+    |> Ok
 
 part2 : {} -> Result Str [NotImplemented, Error Str]
-part2 = \_ -> 
+part2 = \_ ->
     parse2 input
-        |> List.sum
-        |> Num.toStr
-        |> Ok
+    |> List.sum
+    |> Num.toStr
+    |> Ok
 
+# Part 1
 
-#Part 1
-
-parse1 : Str -> List Nat
+parse1 : Str -> List U64
 parse1 = \inputString ->
-    Str.split inputString "\n" 
-        |> List.keepOks parse1Helper
-        |> List.keepOks makeNatFromList
+    Str.splitOn inputString "\n"
+    |> List.keepOks parse1Helper
+    |> List.keepOks makeNatFromList
 
-
-parse1Helper : Str -> Result (List Nat) [ParsingFailure Str, ParsingIncomplete Str]
+parse1Helper : Str -> Result (List U64) [ParsingFailure Str, ParsingIncomplete Str]
 parse1Helper = \inputString ->
     many digitParser1
-        |> parseStr inputString
-        |> Result.map (\dl -> List.keepOks dl digitToNatRes)
-
+    |> parseStr inputString
+    |> Result.map (\dl -> List.keepOks dl digitToNatRes)
 
 # Part 1 parser (naive)
 
@@ -63,43 +56,38 @@ digitParser1 =
         anyCodeunit |> map \_ -> NoDigit,
     ]
 
-
 # Part 2
 
-parse2 : Str -> List Nat
+parse2 : Str -> List U64
 parse2 = \inputString ->
-    Str.split inputString "\n" 
-        |> List.keepOks parseTwice
+    Str.splitOn inputString "\n"
+    |> List.keepOks parseTwice
 
-parseTwice : Str -> Result Nat [ListWasEmpty, ParsingFailure Str, ParsingIncomplete Str]
-parseTwice = \inputString -> 
-    (parse2Helper digitParser inputString, parse2Helper digitParserReverse (reverseStr inputString) )
-        |> \(f, l) -> joinNats f l
+parseTwice : Str -> Result U64 [ListWasEmpty, ParsingFailure Str, ParsingIncomplete Str]
+parseTwice = \inputString ->
+    (parse2Helper digitParser inputString, parse2Helper digitParserReverse (reverseStr inputString))
+    |> \(f, l) -> joinNats f l
 
-
-joinNats : Result Nat [ListWasEmpty, ParsingFailure Str, ParsingIncomplete Str], Result Nat [ListWasEmpty, ParsingFailure Str, ParsingIncomplete Str] -> Result Nat [ListWasEmpty, ParsingFailure Str, ParsingIncomplete Str]   
-joinNats = \r1, r2 -> 
+joinNats : Result U64 [ListWasEmpty, ParsingFailure Str, ParsingIncomplete Str], Result U64 [ListWasEmpty, ParsingFailure Str, ParsingIncomplete Str] -> Result U64 [ListWasEmpty, ParsingFailure Str, ParsingIncomplete Str]
+joinNats = \r1, r2 ->
     when (r1, r2) is
-        (Ok f, Ok l) -> Ok (10*f + l)
+        (Ok f, Ok l) -> Ok (10 * f + l)
         (Err x, _) -> Err x
         (_, Err x) -> Err x
 
-
-parse2Helper : Parser (List U8) Digit, Str -> Result Nat [ListWasEmpty, ParsingFailure Str, ParsingIncomplete Str]
+parse2Helper : Parser (List U8) Digit, Str -> Result U64 [ListWasEmpty, ParsingFailure Str, ParsingIncomplete Str]
 parse2Helper = \parser, inputString ->
     many parser
-        |> parseStr inputString
-        |> Result.map (\dl -> List.keepOks dl digitToNatRes)
-        |> Result.try List.first
+    |> parseStr inputString
+    |> Result.map (\dl -> List.keepOks dl digitToNatRes)
+    |> Result.try List.first
 
-
-makeNatFromList : List Nat -> Result Nat [NoNat]
-makeNatFromList = \nats -> 
-    when nats is 
-        [f, .. , l] -> Ok (10*f + l)
-        [f] -> Ok (10*f + f)
+makeNatFromList : List U64 -> Result U64 [NoNat]
+makeNatFromList = \nats ->
+    when nats is
+        [f, .., l] -> Ok (10 * f + l)
+        [f] -> Ok (10 * f + f)
         [] -> Err NoNat
-
 
 # Parsers for Part 2
 
@@ -131,7 +119,7 @@ digitParser =
 
 # Nasty, the input contains things like oneight
 # which when parsed returns 1 but then disregards the 8.
-# When found at the beginning, then this is ok, but at 
+# When found at the beginning, then this is ok, but at
 # the end of the line, it should take the 8, not the 1.
 # Using the parser was already a slow solution, now it is
 # twice as slow.
@@ -164,9 +152,9 @@ digitParserReverse =
 
 # helpers
 
-digitToNatRes : Digit -> Result Nat [NaN]
-digitToNatRes = \d -> 
-    when d is 
+digitToNatRes : Digit -> Result U64 [NaN]
+digitToNatRes = \d ->
+    when d is
         One -> Ok 1
         Two -> Ok 2
         Three -> Ok 3
@@ -180,16 +168,17 @@ digitToNatRes = \d ->
         NoDigit -> Err NaN
 
 reverseStr : Str -> Str
-reverseStr = \s -> 
-    Str.graphemes s
+reverseStr = \s ->
+    Str.toUtf8 s # |> List.keepOks (\c -> c)
     |> List.reverse
-    |> Str.joinWith ""
+    |> Str.fromUtf8
+    |> Result.withDefault ""
 
 # tests
 
 expect parse1 examplePt1 == [12, 38, 15, 77]
 expect parse2 examplePt1 == [12, 38, 15, 77]
-expect parse2 examplePt2 == [ 29, 83, 13, 24, 42, 14, 76, 55, 18]
+expect parse2 examplePt2 == [29, 83, 13, 24, 42, 14, 76, 55, 18]
 
 examplePt1 : Str
 examplePt1 =

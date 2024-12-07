@@ -1,6 +1,6 @@
-interface S2022.D03
-    exposes [solution]
-    imports [AoC]
+module [solution]
+
+import AoC
 
 solution : AoC.Solution
 solution = { year: 2022, day: 3, title: "Rucksack Reorganization", part1, part2 }

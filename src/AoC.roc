@@ -1,6 +1,4 @@
-interface AoC
-    exposes [Solution, display, filterByYearDay, getDescription]
-    imports []
+module [Solution, display, filterByYearDay, getDescription]
 
 Solution : {
     year : U64,
@@ -11,7 +9,7 @@ Solution : {
 }
 
 display : Solution -> Str
-display = \s -> "\(Num.toStr s.year) Day \(Num.toStr s.day): \(s.title)"
+display = \s -> "$(Num.toStr s.year) Day $(Num.toStr s.day): $(s.title)"
 
 getDescription : List Solution, U64, U64 -> Result Str [NotAvailable]
 getDescription = \solutions, year, day ->
