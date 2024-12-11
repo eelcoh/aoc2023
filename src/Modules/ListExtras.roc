@@ -1,4 +1,4 @@
-module [unzip, zip, gatherEquals]
+module [unzip, zip, gatherEquals, select]
 
 import Modules.Tuples exposing [Tuple, first, second]
 
@@ -50,3 +50,14 @@ partition = \pred, list ->
             (trues, List.prepend falses x)
 
     List.walkBackwards list ([], []) step
+
+select : List a -> List (a, List a)
+select = \l ->
+    when l is
+        [] ->
+            []
+
+        [x, .. as xs] ->
+            sublists =
+                List.map (select xs) (\(y, ys) -> (y, List.prepend ys x))
+            List.prepend sublists (x, xs)

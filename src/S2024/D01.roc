@@ -92,15 +92,6 @@ multiplyAll = \index, numbers ->
     List.map numbers calc
     |> List.sum
 
-# parse1Helper : Str -> Result (List I32) [ParsingFailure Str, ParsingIncomplete Str]
-# parse1Helper = \inputString ->
-#    many digitParser1
-#    |> parseStr inputString
-#    |> Result.map (\dl -> List.keepOks dl digitToNatRes)
-
-# part2 : {} -> Result Str [NotImplemented, Error Str]
-# part2 = \_ -> Err NotImplemented
-
 testinput =
     """
     3   4
