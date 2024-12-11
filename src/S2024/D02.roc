@@ -23,7 +23,7 @@ part1 = \_ ->
 
 part2 : {} -> Result Str [NotImplemented, Error Str]
 part2 = \_ ->
-    parse testinput
+    parse input
     |> List.map checkReports
     |> dbg
     |> List.dropIf (\l -> List.isEmpty l)
