@@ -4,4 +4,4 @@ src/tui
 day1
 .DS_Store
 cli.ll
-txt
+*.txt
