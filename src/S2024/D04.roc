@@ -9,7 +9,7 @@ import parser.String exposing [parseStr, utf8, string, codeunit, anyCodeunit, di
 import Modules.Util exposing [identity]
 
 solution : AoC.Solution
-solution = { year: 2024, day: 4, title: "wdwdwd", part1, part2 }
+solution = { year: 2024, day: 4, title: "Ceres Search", part1, part2 }
 
 part1 : {} -> Result Str [NotImplemented, Error Str]
 part1 = \_ ->
