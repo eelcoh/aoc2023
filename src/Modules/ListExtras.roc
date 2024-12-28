@@ -1,4 +1,4 @@
-module [unzip, zip, gatherEquals, select]
+module [unzip, zip, gatherEquals, select, unique]
 
 import Modules.Tuples exposing [Tuple, first, second]
 
@@ -61,3 +61,9 @@ select = \l ->
             sublists =
                 List.map (select xs) (\(y, ys) -> (y, List.prepend ys x))
             List.prepend sublists (x, xs)
+
+unique : List a -> List a where a implements Hash & Eq
+unique = \ls ->
+    ls
+    |> Set.fromList
+    |> Set.toList
