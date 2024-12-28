@@ -6,6 +6,7 @@ import "2024-03.txt" as input : Str
 
 import parser.Parser exposing [Parser, many, oneOf, keep, skip, chompUntil, chompWhile, const]
 import parser.String exposing [parseStr, utf8, string, codeunit, anyCodeunit, digits]
+import Modules.Util exposing [identity]
 
 solution : AoC.Solution
 solution = { year: 2024, day: 3, title: "Mull It Over", part1, part2 }
@@ -84,10 +85,6 @@ expect parseAll "cdcmul(2,4)" == [Garbage, Garbage, Multiply (2, 4)]
 expect parseAll "mul(2,4)ddd" == [Multiply (2, 4), Garbage, Garbage, Garbage]
 expect parseAll "cdcmul(2,4)ffff" == [Garbage, Garbage, Multiply (2, 4), Garbage]
 expect parseAll "cdcmul(2,4)ffdfdmul(4,5)dd" == [Garbage, Garbage, Multiply (2, 4), Garbage, Garbage, Garbage, Multiply (4, 5), Garbage, Garbage]
-
-identity : a -> a
-identity = \x ->
-    x
 
 process : Instruction -> U64
 process = \i ->

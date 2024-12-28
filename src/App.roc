@@ -4,31 +4,33 @@ module [
 ]
 
 import AoC
-import S2022.D01
-import S2022.D02
-import S2022.D03
-import S2023.D01
-import S2023.D02
-import S2023.D03
+# import S2022.D01
+# import S2022.D02
+# import S2022.D03
+# import S2023.D01
+# import S2023.D02
+# import S2023.D03
 import S2024.D01
 import S2024.D02
 import S2024.D03
 import S2024.D04
+import S2024.D05
 
 ## Export a list of the solutions included in this app
 solutions : List AoC.Solution
 solutions =
     [
-        S2022.D01.solution,
-        S2022.D02.solution,
-        S2022.D03.solution,
-        S2023.D01.solution,
-        S2023.D02.solution,
-        S2023.D03.solution,
+        # S2022.D01.solution,
+        # S2022.D02.solution,
+        # S2022.D03.solution,
+        # S2023.D01.solution,
+        # S2023.D02.solution,
+        # S2023.D03.solution,
         S2024.D01.solution,
         S2024.D02.solution,
         S2024.D03.solution,
         S2024.D04.solution,
+        S2024.D05.solution,
     ]
     |> List.sortWith sortByYearAndDay
 
