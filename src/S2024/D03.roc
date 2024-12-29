@@ -4,8 +4,8 @@ import AoC
 
 import "2024-03.txt" as input : Str
 
-import parser.Parser exposing [Parser, many, oneOf, keep, skip, chompUntil, chompWhile, const]
-import parser.String exposing [parseStr, utf8, string, codeunit, anyCodeunit, digits]
+import parser.Parser exposing [Parser, many, oneOf, keep, skip, chompWhile, const]
+import parser.String exposing [parseStr, string, anyCodeunit, digits]
 import Modules.Util exposing [identity]
 
 solution : AoC.Solution

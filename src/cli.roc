@@ -31,21 +31,22 @@ runTask =
     # start <- Utc.now |> Task.await
     start = Utc.now! {}
 
-    {} <- Stdout.write (ANSI.withFg "Running Part 1..." Gray) |> Task.await
+    Stdout.write! (ANSI.withFg "Running Part 1..." Gray)
 
     partOneResult = App.solvePuzzle { year: yearArg, day: dayArg, puzzle: Part1 }
 
     # mid <- Utc.now |> Task.await
     mid = Utc.now! {}
 
-    {} <- Stdout.write (ANSI.withFg "done\nRunning Part 2..." Gray) |> Task.await
+    Stdout.write! (ANSI.withFg "done\nRunning Part 2..." Gray)
 
     partTwoResult = App.solvePuzzle { year: yearArg, day: dayArg, puzzle: Part2 }
 
     # end <- Utc.now |> Task.await
     end = Utc.now! {}
 
-    {} <- Stdout.write (ANSI.withFg "done\n" Gray) |> Task.await
+    # {} <- Stdout.write (ANSI.withFg "done\n" Gray) |> Task.await
+    Stdout.write! (ANSI.withFg "done\n" Gray)
 
     description = AoC.getDescription App.solutions yearArg dayArg |> Result.withDefault "unreachable"
     header = ANSI.withFg "Solution for $(description)" Blue

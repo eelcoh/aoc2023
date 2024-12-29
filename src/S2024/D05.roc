@@ -12,72 +12,106 @@ import Modules.ListExtras exposing [unique]
 solution : AoC.Solution
 solution = { year: 2024, day: 5, title: "Print Queue", part1, part2 }
 
-# solution for part 1: walk through the elements
-# of a line. Keep track of the set of numbers
-# that are supposed to be listed before this element,
-# including all rules, not only the ones with numbers
-# that appear in this list.
-# Suppose the rules say
-# [1] w has to be before x
-# [2] x has to be before y
-# [3] y has to be before z
-# And the list is [z, w], then rule [1] and [3] won't
-# tell anything, it is rule [2] that is the most decisive.
-# In this example, we start with an empty set, and the `z`.
-# We will add all numbers to the set that have to be before
-# the `z`. So all rules that that say a number has to be
-# before the `z`, but recursively, any number that should
-# be before the `y` as well.
-
 part1 : {} -> Result Str [NotImplemented, Error Str]
 part1 = \_ ->
-    testinput
+    input
     |> read
-    |> Result.map walkTheLines
+    |> Result.map (\(rls, lns) -> checkLines rls lns Bool.true)
+    |> Result.map sumMiddles
     |> Result.map Num.toStr
 
 part2 : {} -> Result Str [NotImplemented, Error Str]
 part2 = \_ ->
-    Err NotImplemented
+    (rls, lns) =
+        input
+        |> read
+        |> Result.withDefault ([], [])
+
+    checkLines rls lns Bool.false
+    |> List.map (\ln -> fix ln rls)
+    |> sumMiddles
+    |> Num.toStr
+    |> Ok
+
+parseLines =
+    testinput
+    |> read
+    |> Result.withDefault ([], [])
+
+# expect (parseLines |> (\(a, _) -> Dict.keys a)) == [12]
 
 read : Str -> Result (Rules, Lines) [Error Str]
 read = \inp ->
     Str.splitOn inp "\n\n"
     |> toRulesAndLines
-    |> Result.mapErr (\_ -> Error "yipes!")
+    |> Result.mapErr (\_ -> Error "not good!")
 
 Rule : (U64, U64)
-Rules : Dict U64 (Set U64)
+Rules : List (U64, Set U64)
 
 Line : List U64
 Lines : List Line
 
 #
-walkTheLines : (Rules, Lines) -> U64
-walkTheLines = \(rs, ls) ->
+checkLines : Rules, Lines, Bool -> List (List U64)
+checkLines = \rs, ls, keepValids ->
     walk = \l ->
-        walkTheLine l rs (Set.empty {})
+        valid =
+            checkLine l rs (Set.empty {})
+
+        if keepValids then
+            valid
+        else
+            !valid
 
     List.keepIf ls walk
-    |> List.keepOks middle
-    |> List.sum
 
-walkTheLine : Line, Rules, Set U64 -> Bool
-walkTheLine = \l, rs, befores ->
+checkLine : Line, Rules, Set U64 -> Bool
+checkLine = \l, rs, befores ->
     when l is
         [a, .. as rest] ->
             if Set.contains befores a then
                 Bool.false
             else
                 newSet =
-                    Dict.get rs a
+                    rulesGet rs a
                     |> Result.map (\s -> Set.union s befores)
                     |> Result.withDefault befores
 
-                walkTheLine rest rs newSet
+                checkLine rest rs newSet
 
         [] ->
             Bool.true
+
+sumMiddles : List (List U64) -> U64
+sumMiddles = \l ->
+    List.keepOks l middle
+    |> List.sum
+
+isPredecessor : Rules, U64, U64 -> Bool
+isPredecessor = \rls, a, b ->
+    rulesGet rls b
+    |> Result.map (\s -> Set.contains s a)
+    |> Result.withDefault Bool.false
+
+insert = \rls, l, elem ->
+    when l is
+        [a, .. as rest] ->
+            if isPredecessor rls elem a then
+                List.prepend l elem
+            else
+                insert rls rest elem
+                |> List.prepend a
+
+        [] ->
+            [elem]
+
+fix : List U64, Rules -> List U64
+fix = \l, rls ->
+    insertFn = \ls, elem ->
+        insert rls ls elem
+
+    List.walk l [] insertFn
 
 toRulesAndLines : List Str -> Result (Rules, Lines) [ParseError]
 toRulesAndLines = \ls ->
@@ -98,77 +132,24 @@ rules = \s ->
 consolidate : List Rule -> Rules
 consolidate = \rls ->
 
-    nrs =
-        allNumbers rls
-
     befores = \v ->
         List.keepIf rls (\(a, b) -> b == v)
         |> List.map (\(a, b) -> a)
 
-    deps = \v ->
-        befores v
-        |> \l -> (v, Set.fromList l)
-
-    firstpass =
-        makeDepsFirstPass rls
-
-    secondpass =
-        List.map nrs (\v -> (v, makeDepsSecondPass firstpass v))
-        |> Dict.fromList
-
-    secondpass
-
-expect consolidate [(14, 83), (53, 14), (12, 53), (67, 14)] == Dict.fromList [(83, Set.fromList [14, 53, 67, 12]), (14, Set.fromList [53, 12, 67]), (53, Set.fromList [12]), (67, Set.empty {}), (12, Set.empty {})]
+    makeDepsFirstPass rls # Rules
 
 makeDepsFirstPass : List Rule -> Rules
 makeDepsFirstPass = \rls ->
-    d = Dict.empty {}
+    d = []
 
-    # insert :  Dict k v,  k,  v -> Dict k v
+    addToRules = \dd, (v, k) ->
+        rulesSet dd k v
 
-    addToDict = \dd, (v, k) ->
-        s = Dict.get dd k
-
-        when s is
-            Ok ss ->
-                Dict.insert dd k (Set.insert ss v)
-
-            _ ->
-                Dict.insert dd k (Set.single v)
-
-    # List.walk :  List elem,  state,  (state, elem -> state) -> state
-    List.walk rls d addToDict
-
-makeDepsSecondPass : Dict U64 (Set U64), U64 -> Set U64
-makeDepsSecondPass = \rls, n ->
-
-    dps : U64 -> Set U64
-    dps = \v ->
-        d = Dict.get rls v
-
-        when d is
-            Ok vs ->
-                List.map (Set.toList vs) dps # List (Set U64)
-                |> List.walk vs Set.union # List (Set U64)
-
-            _ ->
-                Set.empty {}
-
-    dps n
+    List.walk rls d addToRules
 
 toSet : (a, List b) -> (a, Set b)
 toSet = \(a, b) ->
     (a, Set.fromList b)
-
-makeDepsHelper : List (U64, List U64), U64 -> Set U64
-makeDepsHelper = \rls, v ->
-    List.map rls toSet
-    |> Dict.fromList
-    |> \s -> makeDepsSecondPass s v
-
-testrules = [(83, [14]), (14, [53, 67]), (53, [12]), (67, []), (12, [])]
-expect makeDepsHelper testrules 83 == (Set.fromList [14, 53, 67, 12])
-expect makeDepsHelper testrules 14 == (Set.fromList [53, 12, 67])
 
 ruleLines : Str -> List Rule
 ruleLines = \s ->
@@ -176,6 +157,14 @@ ruleLines = \s ->
     |> Str.splitOn "\n"
     |> List.map (\st -> parseStr ruleParser st)
     |> List.keepOks identity
+    |> List.sortWith sortRules
+
+sortRules : Rule, Rule -> [LT, EQ, GT]
+sortRules = \(a1, b1), (a2, b2) ->
+    if a1 == a2 then
+        Num.compare b1 b2
+    else
+        Num.compare a1 a2
 
 allNumbers = \allrules ->
     List.joinMap allrules (\(a, b) -> [a, b])
@@ -208,6 +197,36 @@ midlen = \ls, ln ->
         ([a, ..], 1) -> Ok a
         ([a, b, ..], 2) -> Err EvenList
         ([a, .. as xs], _) -> midlen xs (ln - 2)
+
+rulesGet : Rules, U64 -> Result (Set U64) [NotFound]
+rulesGet = \rls, k ->
+    when rls is
+        [(a, v), .. as rest] ->
+            if a == k then
+                Ok v
+            else
+                rulesGet rest k
+
+        _ ->
+            Err NotFound
+
+rulesSet : Rules, U64, U64 -> Rules
+rulesSet = \rls, k, v ->
+    when rls is
+        [(a, s), .. as rest] ->
+            if a == k then
+                newSet =
+                    Set.insert s v
+
+                List.prepend rest (a, newSet)
+            else
+                newRules =
+                    rulesSet rest k v
+
+                List.prepend newRules (a, s)
+
+        [] ->
+            [(k, Set.single v)]
 
 testinput =
     """
@@ -247,3 +266,22 @@ testinput =
 # Result.withDefault : Result ok err, ok -> ok
 # Result.map : Result a err, (a -> b) -> Result b err
 # Result.try : Result a err, (a -> Result b err) -> Result b err
+
+# solution for part 1: walk through the elements
+# of a line. Keep track of the set of numbers
+# that are supposed to be listed before this element,
+# including all rules, not only the ones with numbers
+# that appear in this list.
+# Suppose the rules say
+# [1] w has to be before x
+# [2] x has to be before y
+# [3] y has to be before z
+# And the list is [z, w], then rule [1] and [3] won't
+# tell anything, it is rule [2] that is the most decisive.
+# In this example, we start with an empty set, and the `z`.
+# We will add all numbers to the set that have to be before
+# the `z`. So all rules that that say a number has to be
+# before the `z`, but recursively, any number that should
+# be before the `y` as well.
+# UNFORTUNATELY, this ran into stack overflows. Quite
+# possibly the input is circular

@@ -7,7 +7,6 @@ import parser.String exposing [parseStr, string, codeunit, anyCodeunit]
 import Modules.Value as Value exposing [Value]
 import Modules.ListExtras exposing [unzip, zip, gatherEquals, select]
 import Bool exposing [and, or]
-import Modules.Polarity exposing [Polarity, polarity]
 
 solution : AoC.Solution
 solution = { year: 2024, day: 2, title: "Red-Nosed Reports", part1, part2 }

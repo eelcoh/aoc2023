@@ -43,8 +43,6 @@ solvePuzzle = \selection ->
         List.map solutions AoC.display
         |> Str.joinWith "\n"
 
-    e = dbg d
-
     when (selection.puzzle, result) is
         (Part1, Ok solution) -> solution.part1 {}
         (Part2, Ok solution) -> solution.part2 {}
